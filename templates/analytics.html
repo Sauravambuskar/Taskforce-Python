@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Task Manager{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+
+{% block content %}
+<div class="analytics-page">
+    <div class="analytics-grid">
+        <!-- Completion Rate -->
+        <div class="analytics-card">
+            <h3><i class="fas fa-chart-pie"></i> Completion Rate</h3>
+            <div class="completion-circle">
+                <svg class="progress-ring" width="200" height="200">
+                    <circle class="progress-ring-circle-bg" cx="100" cy="100" r="80"></circle>
+                    <circle class="progress-ring-circle" cx="100" cy="100" r="80" 
+                            style="stroke-dashoffset: {{ 502 - (completion_rate * 5.02) }}"></circle>
+                </svg>
+                <div class="completion-text">
+                    <span class="completion-percentage">{{ "%.1f"|format(completion_rate) }}%</span>
+                    <span class="completion-label">This Month</span>
+                </div>
+            </div>
+            <div class="completion-stats">
+                <div class="stat-item">
+                    <span class="stat-value">{{ completed_this_month }}</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ tasks_this_month }}</span>
+                    <span class="stat-label">Total</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks by Status -->
+        <div class="analytics-card">
+            <h3><i class="fas fa-tasks"></i> Tasks by Status</h3>
+            <div class="chart-container">
+                <div class="bar-chart">
+                    <div class="bar-item">
+                        <div class="bar-label">Completed</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill bar-success" style="width: {{ (tasks_by_status.completed / (tasks_by_status.completed + tasks_by_status.pending + tasks_by_status.in_progress + tasks_by_status.cancelled) * 100) if (tasks_by_status.completed + tasks_by_status.pending + tasks_by_status.in_progress + tasks_by_status.cancelled) > 0 else 0 }}%"></div>
+                            <span class="bar-value">{{ tasks_by_status.completed }}</span>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">In Progress</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill bar-info" style="width: {{ (tasks_by_status.in_progress / (tasks_by_status.completed + tasks_by_status.pending + tasks_by_status.in_progress + tasks_by_status.cancelled) * 100) if (tasks_by_status.completed + tasks_by_status.pending + tasks_by_status.in_progress + tasks_by_status.cancelled) > 0 else 0 }}%"></div>
+                            <span class="bar-value">{{ tasks_by_status.in_progress }}</span>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Pending</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill bar-warning" style="width: {{ (tasks_by_status.pending / (tasks_by_status.completed + tasks_by_status.pending + tasks_by_status.in_progress + tasks_by_status.cancelled) * 100) if (tasks_by_status.completed + tasks_by_status.pending + tasks_by_status.in_progress + tasks_by_status.cancelled) > 0 else 0 }}%"></div>
+                            <span class="bar-value">{{ tasks_by_status.pending }}</span>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Cancelled</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill bar-danger" style="width: {{ (tasks_by_status.cancelled / (tasks_by_status.completed + tasks_by_status.pending + tasks_by_status.in_progress + tasks_by_status.cancelled) * 100) if (tasks_by_status.completed + tasks_by_status.pending + tasks_by_status.in_progress + tasks_by_status.cancelled) > 0 else 0 }}%"></div>
+                            <span class="bar-value">{{ tasks_by_status.cancelled }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks by Priority -->
+        <div class="analytics-card">
+            <h3><i class="fas fa-exclamation-triangle"></i> Tasks by Priority</h3>
+            <div class="priority-stats">
+                <div class="priority-item priority-urgent">
+                    <div class="priority-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="priority-content">
+                        <h4>{{ tasks_by_priority.urgent }}</h4>
+                        <p>Urgent</p>
+                    </div>
+                </div>
+                <div class="priority-item priority-high">
+                    <div class="priority-icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="priority-content">
+                        <h4>{{ tasks_by_priority.high }}</h4>
+                        <p>High</p>
+                    </div>
+                </div>
+                <div class="priority-item priority-medium">
+                    <div class="priority-icon">
+                        <i class="fas fa-minus"></i>
+                    </div>
+                    <div class="priority-content">
+                        <h4>{{ tasks_by_priority.medium }}</h4>
+                        <p>Medium</p>
+                    </div>
+                </div>
+                <div class="priority-item priority-low">
+                    <div class="priority-icon">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div class="priority-content">
+                        <h4>{{ tasks_by_priority.low }}</h4>
+                        <p>Low</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks by Category -->
+        <div class="analytics-card">
+            <h3><i class="fas fa-tags"></i> Tasks by Category</h3>
+            <div class="category-stats">
+                {% for category, count in tasks_by_category.items() %}
+                <div class="category-item">
+                    <div class="category-info">
+                        <span class="category-name">{{ category }}</span>
+                        <span class="category-count">{{ count }} tasks</span>
+                    </div>
+                    <div class="category-bar">
+                        {% set total = tasks_by_category.values()|sum %}
+                        <div class="category-fill" style="width: {{ (count / total * 100) if total > 0 else 0 }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

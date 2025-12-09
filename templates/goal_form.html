@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{% if goal %}Edit Goal{% else %}Create Goal{% endif %} - Task Manager{% endblock %}
+{% block page_title %}{% if goal %}Edit Goal{% else %}Create Goal{% endif %}{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-container">
+        <form method="POST" class="goal-form">
+            <div class="form-group">
+                <label for="title">
+                    <i class="fas fa-bullseye"></i> Title <span class="required">*</span>
+                </label>
+                <input type="text" id="title" name="title" class="form-input" 
+                       value="{% if goal %}{{ goal.title }}{% endif %}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">
+                    <i class="fas fa-align-left"></i> Description
+                </label>
+                <textarea id="description" name="description" class="form-textarea" rows="4">{% if goal %}{{ goal.description }}{% endif %}</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="target_date">
+                        <i class="fas fa-calendar"></i> Target Date
+                    </label>
+                    <input type="date" id="target_date" name="target_date" class="form-input" 
+                           value="{% if goal and goal.target_date %}{{ goal.target_date.strftime('%Y-%m-%d') }}{% endif %}">
+                </div>
+
+                <div class="form-group">
+                    <label for="status">
+                        <i class="fas fa-info-circle"></i> Status
+                    </label>
+                    <select id="status" name="status" class="form-select" {% if not goal %}disabled{% endif %}>
+                        <option value="active" {% if goal and goal.status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="completed" {% if goal and goal.status == 'completed' %}selected{% endif %}>Completed</option>
+                        <option value="paused" {% if goal and goal.status == 'paused' %}selected{% endif %}>Paused</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="progress">
+                    <i class="fas fa-percentage"></i> Progress: <span id="progressValue">{% if goal %}{{ goal.progress }}{% else %}0{% endif %}%</span>
+                </label>
+                <input type="range" id="progress" name="progress" class="form-range" 
+                       min="0" max="100" value="{% if goal %}{{ goal.progress }}{% else %}0{% endif %}" 
+                       oninput="document.getElementById('progressValue').textContent = this.value + '%'">
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('goals') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> {% if goal %}Update{% else %}Create{% endif %} Goal
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

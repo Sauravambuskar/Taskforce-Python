@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar - Task Manager{% endblock %}
+{% block page_title %}Calendar{% endblock %}
+
+{% block content %}
+<div class="calendar-page">
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <button class="btn btn-icon" onclick="changeMonth(-1)">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <h2 id="calendarMonth"></h2>
+            <button class="btn btn-icon" onclick="changeMonth(1)">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        <div id="calendarGrid" class="calendar-grid"></div>
+    </div>
+    <div class="calendar-legend">
+        <div class="legend-item">
+            <span class="legend-color" style="background-color: #e74c3c;"></span>
+            <span>Urgent</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background-color: #f39c12;"></span>
+            <span>High</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background-color: #3498db;"></span>
+            <span>Medium</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background-color: #2ecc71;"></span>
+            <span>Low</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentDate = new Date();
+const tasks = {{ tasks|tojson }};
+
+const monthNames = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+
+function renderCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    document.getElementById('calendarMonth').textContent = 
+        `${monthNames[month]} ${year}`;
+    
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    const grid = document.getElementById('calendarGrid');
+    grid.innerHTML = '';
+    
+    // Day headers
+    const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    dayHeaders.forEach(day => {
+        const header = document.createElement('div');
+        header.className = 'calendar-day-header';
+        header.textContent = day;
+        grid.appendChild(header);
+    });
+    
+    // Empty cells for days before month starts
+    for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'calendar-day empty';
+        grid.appendChild(empty);
+    }
+    
+    // Days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayCell = document.createElement('div');
+        dayCell.className = 'calendar-day';
+        
+        const date = new Date(year, month, day);
+        const dateStr = date.toISOString().split('T')[0];
+        
+        const dayNumber = document.createElement('div');
+        dayNumber.className = 'day-number';
+        dayNumber.textContent = day;
+        dayCell.appendChild(dayNumber);
+        
+        const tasksForDay = tasks.filter(task => {
+            if (!task.due_date) return false;
+            const taskDate = new Date(task.due_date).toISOString().split('T')[0];
+            return taskDate === dateStr;
+        });
+        
+        if (tasksForDay.length > 0) {
+            const tasksList = document.createElement('div');
+            tasksList.className = 'day-tasks';
+            tasksForDay.slice(0, 3).forEach(task => {
+                const taskDot = document.createElement('div');
+                taskDot.className = `task-dot priority-${task.priority}`;
+                taskDot.title = task.title;
+                tasksList.appendChild(taskDot);
+            });
+            if (tasksForDay.length > 3) {
+                const more = document.createElement('div');
+                more.className = 'task-more';
+                more.textContent = `+${tasksForDay.length - 3}`;
+                tasksList.appendChild(more);
+            }
+            dayCell.appendChild(tasksList);
+        }
+        
+        if (date.toDateString() === new Date().toDateString()) {
+            dayCell.classList.add('today');
+        }
+        
+        grid.appendChild(dayCell);
+    }
+}
+
+function changeMonth(direction) {
+    currentDate.setMonth(currentDate.getMonth() + direction);
+    renderCalendar();
+}
+
+renderCalendar();
+</script>
+{% endblock %}
+

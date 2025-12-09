@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Task Manager{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ total_tasks }}</h3>
+                <p>Total Tasks</p>
+            </div>
+        </div>
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ completed_tasks }}</h3>
+                <p>Completed</p>
+            </div>
+        </div>
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ pending_tasks }}</h3>
+                <p>Pending</p>
+            </div>
+        </div>
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-spinner"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ in_progress_tasks }}</h3>
+                <p>In Progress</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <a href="{{ url_for('create_task') }}" class="action-btn btn-primary">
+            <i class="fas fa-plus"></i>
+            <span>New Task</span>
+        </a>
+        <a href="{{ url_for('create_goal') }}" class="action-btn btn-secondary">
+            <i class="fas fa-bullseye"></i>
+            <span>New Goal</span>
+        </a>
+        <a href="{{ url_for('tasks') }}" class="action-btn btn-outline">
+            <i class="fas fa-list"></i>
+            <span>View All Tasks</span>
+        </a>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="dashboard-grid">
+        <!-- Recent Tasks -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3><i class="fas fa-history"></i> Recent Tasks</h3>
+                <a href="{{ url_for('tasks') }}" class="view-all">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_tasks %}
+                    <div class="task-list">
+                        {% for task in recent_tasks %}
+                        <div class="task-item">
+                            <div class="task-checkbox">
+                                <input type="checkbox" {% if task.status == 'completed' %}checked{% endif %} 
+                                       onchange="toggleTask({{ task.id }})">
+                            </div>
+                            <div class="task-info">
+                                <h4>{{ task.title }}</h4>
+                                <div class="task-meta">
+                                    <span class="priority-badge priority-{{ task.priority }}">{{ task.priority }}</span>
+                                    {% if task.category %}
+                                    <span class="category-badge" style="background-color: {{ task.category.color }}20; color: {{ task.category.color }}">
+                                        {{ task.category.name }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn-icon">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty-state">No recent tasks</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Upcoming Tasks -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3><i class="fas fa-calendar-check"></i> Upcoming Tasks</h3>
+                <a href="{{ url_for('calendar') }}" class="view-all">View Calendar</a>
+            </div>
+            <div class="card-body">
+                {% if upcoming_tasks %}
+                    <div class="task-list">
+                        {% for task in upcoming_tasks %}
+                        <div class="task-item">
+                            <div class="task-checkbox">
+                                <input type="checkbox" {% if task.status == 'completed' %}checked{% endif %} 
+                                       onchange="toggleTask({{ task.id }})">
+                            </div>
+                            <div class="task-info">
+                                <h4>{{ task.title }}</h4>
+                                <div class="task-meta">
+                                    <span class="priority-badge priority-{{ task.priority }}">{{ task.priority }}</span>
+                                    {% if task.due_date %}
+                                    <span class="due-date">
+                                        <i class="fas fa-calendar"></i>
+                                        {{ task.due_date.strftime('%b %d, %Y') }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn-icon">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty-state">No upcoming tasks</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Active Goals -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3><i class="fas fa-bullseye"></i> Active Goals</h3>
+                <a href="{{ url_for('goals') }}" class="view-all">View All</a>
+            </div>
+            <div class="card-body">
+                {% if active_goals %}
+                    <div class="goals-list">
+                        {% for goal in active_goals %}
+                        <div class="goal-item">
+                            <div class="goal-header">
+                                <h4>{{ goal.title }}</h4>
+                                <span class="goal-progress">{{ goal.progress }}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ goal.progress }}%"></div>
+                            </div>
+                            {% if goal.target_date %}
+                            <p class="goal-date">
+                                <i class="fas fa-calendar"></i>
+                                Target: {{ goal.target_date.strftime('%b %d, %Y') }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty-state">No active goals</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Productivity Stats -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-line"></i> This Week</h3>
+            </div>
+            <div class="card-body">
+                <div class="productivity-stats">
+                    <div class="productivity-item">
+                        <div class="productivity-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="productivity-content">
+                            <h4>{{ tasks_this_week }}</h4>
+                            <p>Tasks Created</p>
+                        </div>
+                    </div>
+                    <div class="productivity-item">
+                        <div class="productivity-icon">
+                            <i class="fas fa-check-double"></i>
+                        </div>
+                        <div class="productivity-content">
+                            <h4>{{ completed_this_week }}</h4>
+                            <p>Tasks Completed</p>
+                        </div>
+                    </div>
+                    {% if tasks_this_week > 0 %}
+                    <div class="productivity-item">
+                        <div class="productivity-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="productivity-content">
+                            <h4>{{ "%.1f"|format((completed_this_week / tasks_this_week * 100)) }}%</h4>
+                            <p>Completion Rate</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleTask(taskId) {
+    fetch(`/tasks/${taskId}/toggle`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status) {
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+</script>
+{% endblock %}
+

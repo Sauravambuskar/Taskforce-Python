@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{% if task %}Edit Task{% else %}Create Task{% endif %} - Task Manager{% endblock %}
+{% block page_title %}{% if task %}Edit Task{% else %}Create Task{% endif %}{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-container">
+        <form method="POST" class="task-form">
+            <div class="form-group">
+                <label for="title">
+                    <i class="fas fa-heading"></i> Title <span class="required">*</span>
+                </label>
+                <input type="text" id="title" name="title" class="form-input" 
+                       value="{% if task %}{{ task.title }}{% endif %}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">
+                    <i class="fas fa-align-left"></i> Description
+                </label>
+                <textarea id="description" name="description" class="form-textarea" rows="4">{% if task %}{{ task.description }}{% endif %}</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="priority">
+                        <i class="fas fa-exclamation-circle"></i> Priority
+                    </label>
+                    <select id="priority" name="priority" class="form-select">
+                        <option value="low" {% if task and task.priority == 'low' %}selected{% endif %}>Low</option>
+                        <option value="medium" {% if task and task.priority == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="high" {% if task and task.priority == 'high' %}selected{% endif %}>High</option>
+                        <option value="urgent" {% if task and task.priority == 'urgent' %}selected{% endif %}>Urgent</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">
+                        <i class="fas fa-info-circle"></i> Status
+                    </label>
+                    <select id="status" name="status" class="form-select" {% if not task %}disabled{% endif %}>
+                        <option value="pending" {% if task and task.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="in_progress" {% if task and task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="completed" {% if task and task.status == 'completed' %}selected{% endif %}>Completed</option>
+                        <option value="cancelled" {% if task and task.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="category_id">
+                        <i class="fas fa-tag"></i> Category
+                    </label>
+                    <select id="category_id" name="category_id" class="form-select">
+                        <option value="">No Category</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" 
+                                {% if task and task.category_id == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="due_date">
+                        <i class="fas fa-calendar"></i> Due Date
+                    </label>
+                    <input type="date" id="due_date" name="due_date" class="form-input" 
+                           value="{% if task and task.due_date %}{{ task.due_date.strftime('%Y-%m-%d') }}{% endif %}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="progress">
+                    <i class="fas fa-percentage"></i> Progress: <span id="progressValue">{% if task %}{{ task.progress }}{% else %}0{% endif %}%</span>
+                </label>
+                <input type="range" id="progress" name="progress" class="form-range" 
+                       min="0" max="100" value="{% if task %}{{ task.progress }}{% else %}0{% endif %}" 
+                       oninput="document.getElementById('progressValue').textContent = this.value + '%'">
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('tasks') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> {% if task %}Update{% else %}Create{% endif %} Task
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
